@@ -48,17 +48,36 @@ class DeploymentTest(object):
 
 	neutron = neutronClient.Client(username=openstack_config['username'], password=openstack_config['password'], tenant_name=openstack_config['tenant_name'], auth_url=openstack_config['auth_url'])
 	for network in internal_networks:
-	    created_network = neutron.create_network({'network':{'name':network}})
-	    for internal in internal_networks[network]:
-		#create a subnet
-		if internal == 'subnet':
-		    subnet = neutron.create_subnet({'subnet':{'name':internal_networks[network][internal]['name'], 'network_id':created_network['network']['id'], 'ip_version':4, 'cidr':internal_networks[network][internal]['cidr'], 'gateway_ip':internal_networks[network][internal]['gateway']}}) 
-		elif internal == 'router':
-		    router = neutron.create_router({'router':{'name':internal_networks[network][internal]['name']}})
-		    neutron.add_interface_router(router['router']['id'], {'subnet_id':subnet['subnet']['id']})
+	    if network not in self.list_network():
+	        created_network = neutron.create_network({'network':{'name':network}})
+		print "The network \" %s \" created" % network
+	        for internal in internal_networks[network]:
+	            #create a subnet
+		    if internal == 'subnet':
+		        subnet = neutron.create_subnet({'subnet':{'name':internal_networks[network][internal]['name'], 'network_id':created_network['network']['id'], 'ip_version':4, 'cidr':internal_networks[network][internal]['cidr'], 'gateway_ip':internal_networks[network][internal]['gateway']}}) 
+		    elif internal == 'router':
+		        router = neutron.create_router({'router':{'name':internal_networks[network][internal]['name']}})
+		        neutron.add_interface_router(router['router']['id'], {'subnet_id':subnet['subnet']['id']})
+	    else:
+		print "The same network name \" %s \" exists!" % network
+		
 
 		    #neutron.create_subnet({'subnet':{'name':internal_networks[network][internal]['name'], 'network_id':created_network['network']['id'], 'ip_version':4, 'cidr':internal_networks[network][internal]['cidr'], 'gateway_ip':internal_networks[network][internal]['gateway'], 'list':True, 'dns_nameservers':internal_networks[network][internal]['dns']}}) 
 	#print neutron.list_networks()
+
+    def list_network(self):
+	config = self.config.get('environment')
+        openstack_config = config.get('openstack')
+        internal_networks = config.get('internal')
+
+        neutron = neutronClient.Client(username=openstack_config['username'], password=openstack_config['password'], tenant_name=openstack_config['tenant_name'], auth_url=openstack_config['auth_url'])
+	
+	network_list = neutron.list_networks()
+	network_name = []
+	for network in network_list['networks']:
+	    network_name.append(network['name'])
+
+	return network_name
 
     def get_credential(self, filename):
 	config = self.config.get('environment')
@@ -85,8 +104,9 @@ target = None
 
 test = DeploymentTest(config)
 #test.create_image()
-#test.create_internal_network()
-test.get_credential("python.rc")
+test.create_internal_network()
+#test.get_credential("python.rc")
+#test.list_network()
 
 #print args.auth_url
 #test = DeploymentTest("http://10.5.2.63:5000/v2.0")
