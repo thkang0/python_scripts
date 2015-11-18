@@ -4,4 +4,4 @@ The openstack-admin python code provides initial environments when you are just 
 # How to use
 Create an environment yaml file like default yaml file
 
-
+test reset HEAD
