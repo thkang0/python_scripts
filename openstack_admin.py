@@ -9,7 +9,8 @@ from glanceclient import client as glance_client
 import argparse
 import yaml
 import os
-
+from tabulate import tabulate
+from prettytable import PrettyTable
 
 class DeploymentTest(object):
     def __init__(self, config):
@@ -48,7 +49,7 @@ class DeploymentTest(object):
 
 	neutron = neutronClient.Client(username=openstack_config['username'], password=openstack_config['password'], tenant_name=openstack_config['tenant_name'], auth_url=openstack_config['auth_url'])
 	for network in internal_networks:
-	    if network not in self.list_network():
+	    if network not in self.list_network()[0]:
 	        created_network = neutron.create_network({'network':{'name':network}})
 		print "The network \" %s \" created" % network
 	        for internal in internal_networks[network]:
@@ -77,17 +78,44 @@ class DeploymentTest(object):
 	for network in network_list['networks']:
 	    network_name.append(network['name'])
 
-	return network_name
+	return network_name, network_list
+
+    def print_values(self, val, type):
+
+        if type == 'ports':
+            val_list = val['ports']
+        if type == 'networks':
+            val_list = val['networks']
+        if type == 'routers':
+            val_list = val['routers']
+ 
+        print('------------------------------------------------------\n')
+        for p in val_list:
+            for k, v in p.items():
+		if k == 'status' or k == 'name' or k == 'id' or k == 'subnets':
+                    print("%s : %s" % (k, v))
+            print('------------------------------------------------------\n')
+
+    def show_network(self):
+	networks = self.list_network()
+	#print tabulate(networks)
+	self.print_values(networks[1], 'networks')
+
+	#t = PrettyTable(['Status', 'Subnets', 'Name', 'ID'])
+	#t.add_row(networks)
+	#print t
 
     def get_credential(self, filename):
 	config = self.config.get('environment')
 	openstack_config = config.get('openstack')
-	with open(filename, 'w') as credential:
-	    credential.write("export OS_AUTH_URL=%s\n"%openstack_config['auth_url'])
-	    credential.write("export OS_TENANT_NAME=%s\n"%openstack_config['tenant_name'])
-	    credential.write("export OS_USERNAME=%s\n"%openstack_config['username'])
-	    credential.write("export OS_PASSWORD=%s\n"%openstack_config['password'])
-
+	if not os.path.exists(filename):
+	    with open(filename, 'w') as credential:
+	        credential.write("export OS_AUTH_URL=%s\n"%openstack_config['auth_url'])
+	        credential.write("export OS_TENANT_NAME=%s\n"%openstack_config['tenant_name'])
+	        credential.write("export OS_USERNAME=%s\n"%openstack_config['username'])
+	        credential.write("export OS_PASSWORD=%s\n"%openstack_config['password'])
+	else:
+	    print "You have already the credential file : %s" %filename
 
 parser = argparse.ArgumentParser(description="create an initial Openstack environment")
 
@@ -104,9 +132,10 @@ target = None
 
 test = DeploymentTest(config)
 #test.create_image()
-test.create_internal_network()
+#test.create_internal_network()
 #test.get_credential("python.rc")
 #test.list_network()
+test.show_network()
 
 #print args.auth_url
 #test = DeploymentTest("http://10.5.2.63:5000/v2.0")
