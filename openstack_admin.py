@@ -74,6 +74,8 @@ class DeploymentTest(object):
         neutron = neutronClient.Client(username=openstack_config['username'], password=openstack_config['password'], tenant_name=openstack_config['tenant_name'], auth_url=openstack_config['auth_url'])
 	
 	network_list = neutron.list_networks()
+	print "===== network list ===="
+	print network_list
 	network_name = []
 	for network in network_list['networks']:
 	    network_name.append(network['name'])
@@ -134,8 +136,8 @@ test = DeploymentTest(config)
 #test.create_image()
 #test.create_internal_network()
 #test.get_credential("python.rc")
-#test.list_network()
-test.show_network()
+test.list_network()
+#test.show_network()
 
 #print args.auth_url
 #test = DeploymentTest("http://10.5.2.63:5000/v2.0")
