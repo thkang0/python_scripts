@@ -82,7 +82,6 @@ class DeploymentTest(object):
 	return network_name, network_list
 
     def print_values(self, val, type):
-
         if type == 'ports':
             val_list = val['ports']
         if type == 'networks':
@@ -118,6 +117,22 @@ class DeploymentTest(object):
 	else:
 	    print "You have already the credential file : %s" %filename
 
+    def add_keypair(self, filename):
+	if not os.path.exists(filename):
+	    self.get_auth()
+            nova = nova_client.Client("2", session=self.session)
+            keypair_name = filename.split('.')[0]
+            keypair = nova.keypairs.create(name=keypair_name)
+            print keypair.private_key
+	    with open(filename, os.O_WRONLY | os.O_CREAT, 0o600) as private_key:
+                private_key.write(keypair.private_key)
+            keypairs = nova.keypairs.list()
+            print "==== Nova Key Pair List ===="
+            print keypairs
+	else:
+	    print "You have already the private key file : %s" %filename
+
+
 parser = argparse.ArgumentParser(description="create an initial Openstack environment")
 
 #parser.add_argument('-a', '--auth_url', type=str, default='http://localhost:5000/v2.0', required=False, help='keystone endpoint URL like http://192.168.0.100:5000/v2.0')
@@ -135,6 +150,7 @@ demo = DeploymentTest(config)
 demo.create_image()
 demo.create_internal_network()
 demo.get_credential("admin.rc")
+demo.add_keypair("demo-key.pem")
 #demo.list_network()
 demo.show_network()
 
