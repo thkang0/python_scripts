@@ -9,7 +9,6 @@ from glanceclient import client as glance_client
 import argparse
 import yaml
 import os
-from tabulate import tabulate
 from prettytable import PrettyTable
 
 class DeploymentTest(object):
@@ -132,12 +131,12 @@ if not os.path.exists(args.config):
 config = yaml.safe_load(file(args.config))
 target = None
 
-test = DeploymentTest(config)
-#test.create_image()
-#test.create_internal_network()
-#test.get_credential("python.rc")
-test.list_network()
-#test.show_network()
+demo = DeploymentTest(config)
+demo.create_image()
+demo.create_internal_network()
+demo.get_credential("admin.rc")
+#demo.list_network()
+demo.show_network()
 
 #print args.auth_url
 #test = DeploymentTest("http://10.5.2.63:5000/v2.0")

@@ -1,7 +1,0 @@
-# Instruction
-The openstack-admin python code provides initial environments when you are just done a deployment
-
-# How to use
-Create an environment yaml file like default yaml file
-
-test reset HEAD
