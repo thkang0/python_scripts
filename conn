@@ -1,0 +1,49 @@
+#!/bin/bash
+USERNAME=ubuntu
+#OPENOPS="lab.openops.co.kr"
+#HOME="thkang0.iptime.org"
+#TEST="192.168.88.250"
+HOSTS=("lab.openops.co.kr" "thkang0.iptime.org" "192.168.88.250" "114.31.116.146" "148.1.1.10" )
+CONNECTION=("openops" "home" "test" "openops_tunnel" "home_tunnel" "iaas" "deploy" "deploy_tunnel")
+
+if [ $# -lt 1 ]
+then
+  echo "Usage: conn <host>"
+  echo "Usage: conn list"
+  exit 1
+fi
+
+if [ "$1" == "list" ]
+  then
+    for i in "${CONNECTION[@]}"
+    do
+      echo $i
+    done
+fi
+
+if [ "$1" == "${CONNECTION[0]}" ]
+  then
+    ssh -l $USERNAME ${HOSTS[0]} -p50022 
+elif [ "$1" == "${CONNECTION[1]}" ]
+  then
+    ssh -l $USERNAME ${HOSTS[1]} -p50022 
+elif [ "$1" == "${CONNECTION[2]}" ]
+  then
+    ssh  -o StrictHostKeyChecking=no -l $USERNAME ${HOSTS[2]}
+elif [ "$1" == "${CONNECTION[3]}" ]
+  then
+    sshuttle -r $USERNAME@${HOSTS[0]}:50022 172.0.0.0/8
+elif [ "$1" == "${CONNECTION[4]}" ]
+  then
+    sshuttle -r $USERNAME@${HOSTS[1]}:50022 192.168.0.0/24
+elif [ "$1" == "${CONNECTION[5]}" ]
+  then
+    ssh -i /Users/taehokang/Downloads/pem/iaasadm.pem  $USERNAME@${HOSTS[3]}
+elif [ "$1" == "${CONNECTION[6]}" ]
+  then
+    ssh $USERNAME@${HOSTS[4]}
+elif [ "$1" == "${CONNECTION[7]}" ]
+  then
+    sshuttle -r $USERNAME@${HOSTS[4]} 148.0.0.0/8
+fi
+
